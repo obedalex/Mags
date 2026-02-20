@@ -62,10 +62,31 @@ const ProductsPage = () => {
     console.log("edit", productId);
   };
 
+
+  // Handle add from search 
+  const handleAddFromSearch = () => {
+    if (!searchQuery.trim()) return;
+
+    const newProduct = {
+      id: products.length + 1, // simple incremental id
+      productName: searchQuery.trim(),
+      category: "Uncategorized",
+      price: "$0.00",
+      views: 0,
+    };
+
+    setProducts((prev) => [...prev, newProduct]);
+    setSearchQuery(""); // clear input after adding
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Products</h1>
-      <Searchbar value={searchQuery} onChange={setSearchQuery} />
+      <Searchbar
+        value={searchQuery}
+        onChange={setSearchQuery}
+        onAdd={handleAddFromSearch}
+      />
       <ProductTable
         products={filteredProducts}
         onDelete={handleDelete}
