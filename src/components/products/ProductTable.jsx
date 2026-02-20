@@ -1,41 +1,7 @@
 import React from "react";
 import { Edit2, Trash2, Eye } from "lucide-react";
 
-// Sample data
-const details = [
-  {
-    productName: "Wireless Headphones",
-    category: "Electronics",
-    price: "$99.9",
-    views: 234,
-  },
-  {
-    productName: "Smart Watch",
-    category: "Electronics",
-    price: "$149.9",
-    views: 180,
-  },
-  {
-    productName: "Laptop Stand",
-    category: "Accessories",
-    price: "$39.9",
-    views: 120,
-  },
-  {
-    productName: "USB-C Cable",
-    category: "Accessories",
-    price: "$9.9",
-    views: 300,
-  },
-  {
-    productName: "Phone Charger",
-    category: "Accessories",
-    price: "$19.9",
-    views: 150,
-  },
-];
-
-const ProductTable = () => {
+const ProductTable = ({ products, onDelete, onEdit }) => {
   return (
     <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
       {/* Table Header */}
@@ -68,9 +34,9 @@ const ProductTable = () => {
             </tr>
           </thead>
           <tbody>
-            {details.map((item, index) => (
+            {products.map((item) => (
               <tr
-                key={index}
+                key={item.id ?? item.productName}
                 className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
               >
                 <td className="py-4 px-6 text-sm font-medium text-card-foreground">
@@ -96,6 +62,7 @@ const ProductTable = () => {
                       type="button"
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 rounded-md transition-colors"
                       aria-label="Edit product"
+                      onClick={() => onEdit?.(item.id ?? item.productName)}
                     >
                       <Edit2 className="h-3.5 w-3.5" />
                       Edit
@@ -104,6 +71,7 @@ const ProductTable = () => {
                       type="button"
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                       aria-label="Delete product"
+                      onClick={() => onDelete?.(item.id ?? item.productName)}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                       Delete
