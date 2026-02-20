@@ -1,7 +1,7 @@
 import React from "react";
 import { Search, Plus } from "lucide-react";
 
-const Searchbar = ({value, onChange}) => {
+const Searchbar = ({ value, onChange, onAdd }) => {
   return (
     <div className="mb-6">
       <div className="flex items-center gap-4">
@@ -21,6 +21,7 @@ const Searchbar = ({value, onChange}) => {
         {/* Add Product Button */}
         <button
           type="button"
+          onClick={onAdd}
           className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground 
                    rounded-lg font-medium hover:bg-primary/90 transition-colors
                    shadow-sm hover:shadow-md"
