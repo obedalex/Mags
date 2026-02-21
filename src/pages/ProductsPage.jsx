@@ -1,6 +1,7 @@
 import React from "react";
 import Searchbar from "@/components/products/Searchbar";
 import ProductTable from "@/components/products/ProductTable";
+import AddProductModal from "@/components/products/AddProductModal";
 import { useState } from "react";
 
 const ProductsPage = () => {
@@ -46,6 +47,9 @@ const ProductsPage = () => {
   // Search query
   const [searchQuery, setSearchQuery] = useState("");
 
+  // State modal
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
   const filteredProducts = products.filter((product) =>
     product.productName.toLowerCase().includes(searchQuery.toLowerCase()),
   );
@@ -62,22 +66,32 @@ const ProductsPage = () => {
     console.log("edit", productId);
   };
 
-
-  // Handle add from search 
-  const handleAddFromSearch = () => {
-    if (!searchQuery.trim()) return;
-
-    const newProduct = {
-      id: products.length + 1, // simple incremental id
-      productName: searchQuery.trim(),
-      category: "Uncategorized",
-      price: "$0.00",
-      views: 0,
-    };
-
-    setProducts((prev) => [...prev, newProduct]);
-    setSearchQuery(""); // clear input after adding
+  // Function to open modal
+  const handleOpenAddModal = () => {
+    setIsAddModalOpen(true);
   };
+
+  const handleCloseAddModal = () => {
+    setIsAddModalOpen(false);
+  };
+
+  // Handle add from search
+  //  const handleAddFromSearch = () => {
+  //    const name = searchQuery.trim();
+  //    if (!name) return;
+
+  //    const newProduct = {
+  //      id: crypto.randomUUID(),
+  //      name, // cleaner naming (consistent)
+  //      category: null, // null means “not set yet”
+  //      priceCents: 0, // store as number (cents) for accuracy
+  //      views: 0,
+  //      createdAt: new Date().toISOString(),
+  //    };
+
+  //    setProducts((prev) => [newProduct, ...prev]); // newest first (dashboard style)
+  //    setSearchQuery("");
+  //  };
 
   return (
     <div className="space-y-6">
@@ -85,13 +99,14 @@ const ProductsPage = () => {
       <Searchbar
         value={searchQuery}
         onChange={setSearchQuery}
-        onAdd={handleAddFromSearch}
+        onAdd={handleOpenAddModal}
       />
       <ProductTable
         products={filteredProducts}
         onDelete={handleDelete}
         onEdit={handleEdit}
       />
+      <AddProductModal isOpen={isAddModalOpen} onClose={handleCloseAddModal} />
     </div>
   );
 };
