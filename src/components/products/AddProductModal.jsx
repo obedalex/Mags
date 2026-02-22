@@ -2,7 +2,13 @@ import React from "react";
 import { X } from "lucide-react";
 import AddProductForm from "./AddProductForm";
 
-const AddProductModal = ({ isOpen, onClose, onAddProduct }) => {
+const AddProductModal = ({
+  isOpen,
+  onClose,
+  onAddProduct,
+  initialData = null, // ← NEW: product data for editing
+  mode = "add", // ← NEW: "add" or "edit"
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -10,7 +16,8 @@ const AddProductModal = ({ isOpen, onClose, onAddProduct }) => {
       <div className="bg-card rounded-lg shadow-xl max-w-md w-full border border-border">
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-xl font-semibold text-card-foreground">
-            Add New Product
+            {mode === "edit" ? "Edit Product" : "Add New Product"}
+            {/* ↑ Change title based on mode */}
           </h2>
 
           <button
@@ -26,14 +33,14 @@ const AddProductModal = ({ isOpen, onClose, onAddProduct }) => {
         <AddProductForm
           onCancel={onClose}
           onSubmit={(data) => {
-            // data is your form values
             onAddProduct?.(data);
             onClose();
           }}
+          initialData={initialData} // ← Pass to form
+          mode={mode} // ← Pass to form
         />
       </div>
     </div>
   );
 };
-
 export default AddProductModal;

@@ -69,7 +69,9 @@ src/
 │   │
 │   ├── products/
 │   │   ├── Searchbar.jsx            # Product search input + Add button
-│   │   └── ProductTable.jsx         # Product listing table
+│   │   ├── ProductTable.jsx         # Product listing table
+│   │   ├── AddProductModal.jsx      # Modal wrapper for add product form
+│   │   └── AddProductForm.jsx       # Form component for adding products
 │   │
 │   └── settings/
 │       └── AppearanceSettings.jsx   # Dark mode toggle settings
@@ -106,12 +108,15 @@ src/
 - **Tailwind Integration**: Uses `dark:` prefix for styling
 - **Smooth Transitions**: Colors fade smoothly when switching themes
 
-### 3. Products Page (Partial) ✅
+### 3. Products Page ✅
 - **Display Products**: Table showing product list with mock data
 - **Search/Filter**: Real-time search by product name
+- **Add Products**: Modal form with validation to add new products
 - **Delete Products**: Remove products with confirmation dialog
-- **Product Data**: Name, category, price, views
-- **Action Buttons**: Edit and Delete (edit not yet implemented)
+- **Product Data**: Name, category, price, description, views
+- **Action Buttons**: Edit (not yet implemented) and Delete (working)
+- **Form Validation**: Prevents adding products with missing required fields
+- **Auto-formatting**: Price automatically formatted with $ and 2 decimals
 
 ### 4. Component Architecture ✅
 - **Reusable Components**: SearchBar, ProductTable separated
@@ -189,11 +194,12 @@ src/
 **Props**:
 - `value` (string): Current search query
 - `onChange` (function): Called when search text changes
+- `onAdd` (function): Called when "Add Product" button clicked
 
 **Features**:
 - Search icon (magnifying glass)
 - Controlled input (value from parent)
-- "Add Product" button (not yet functional)
+- "Add Product" button triggers modal
 - Dark mode support
 
 **Usage**:
@@ -201,6 +207,7 @@ src/
 <Searchbar
   value={searchQuery}
   onChange={setSearchQuery}
+  onAdd={handleOpenAddModal}
 />
 ```
 
@@ -233,6 +240,84 @@ src/
 - Delete button (red)
 - Hover effects on rows
 - Dark mode support
+
+---
+
+#### **AddProductModal** (`components/products/AddProductModal.jsx`)
+**Purpose**: Modal wrapper for add product functionality
+
+**Props**:
+- `isOpen` (boolean): Controls modal visibility
+- `onClose` (function): Called to close modal
+- `onAddProduct` (function): Called with form data when product added
+
+**Features**:
+- Full-screen overlay backdrop
+- Centered modal container
+- Close button (X icon)
+- Dark mode support
+- Contains AddProductForm component
+- Auto-closes on successful submission
+
+**Usage**:
+```javascript
+<AddProductModal
+  isOpen={isAddModalOpen}
+  onClose={handleCloseAddModal}
+  onAddProduct={handleAddProduct}
+/>
+```
+
+---
+
+#### **AddProductForm** (`components/products/AddProductForm.jsx`)
+**Purpose**: Form for entering new product details
+
+**Props**:
+- `onSubmit` (function): Called with validated form data
+- `onCancel` (function): Called when cancel clicked
+
+**Form Fields**:
+- **Product Name** (required): Text input
+- **Category** (required): Dropdown select
+- **Price** (required): Number input with decimal support
+- **Description** (optional): Textarea
+
+**Features**:
+- Form validation (prevents empty submissions)
+- Generic `handleChange` for all inputs
+- Auto-resets after successful submission
+- Trim whitespace from text inputs
+- Price formatting in parent component
+- Uses HTML form element with onSubmit
+- Cancel and Submit buttons
+
+**Form Data Structure**:
+```javascript
+{
+  productName: string,
+  category: string,
+  price: string,
+  description: string
+}
+```
+
+**Categories Available**:
+- Electronics
+- Accessories
+- Clothing
+- Home & Garden
+
+**Usage**:
+```javascript
+<AddProductForm
+  onSubmit={(data) => {
+    onAddProduct(data);
+    onClose();
+  }}
+  onCancel={onClose}
+/>
+```
 
 ---
 
@@ -388,33 +473,65 @@ const MyComponent = () => {
 
 ### Products Page (`pages/ProductsPage.jsx`)
 
-**Status**: Partially Implemented ✅
+**Status**: 75% Implemented ✅
 
 **Features Implemented**:
-- Display products from state
-- Search/filter products by name
-- Delete products with confirmation
+- Display products from state ✅
+- Search/filter products by name ✅
+- Delete products with confirmation ✅
+- Add new products via modal form ✅
+- Form validation ✅
+- Auto-increment IDs using crypto.randomUUID() ✅
 
 **State**:
 ```javascript
 const [products, setProducts] = useState([...]);
 const [searchQuery, setSearchQuery] = useState("");
+const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+```
+
+**Key Handlers**:
+
+**handleDelete**:
+```javascript
+const handleDelete = (productId) => {
+  if (window.confirm("Are you sure?")) {
+    setProducts(products.filter(p => p.id !== productId));
+  }
+};
+```
+
+**handleAddProduct**:
+```javascript
+const handleAddProduct = (data) => {
+  const newProduct = {
+    id: crypto.randomUUID(),
+    productName: data.productName,
+    category: data.category,
+    price: `$${Number(data.price || 0).toFixed(2)}`,
+    views: 0,
+  };
+  setProducts((prev) => [newProduct, ...prev]); // Add to top
+};
 ```
 
 **Data Flow**:
 ```
 ProductsPage (has state)
     ↓
-    ├── SearchBar (receives value, reports onChange)
-    └── ProductTable (receives filtered products, reports onDelete/onEdit)
+    ├── SearchBar (receives value, reports onChange and onAdd)
+    ├── ProductTable (receives filtered products, reports onDelete/onEdit)
+    └── AddProductModal (receives isOpen, onClose, onAddProduct)
+            └── AddProductForm (receives onSubmit, onCancel)
 ```
 
 **Features Pending**:
-- Add new product (modal/form)
-- Edit existing product
-- Category filter
-- Image upload
-- Save to database
+- Edit existing product ❌
+- Category management (add/delete categories) ❌
+- Image upload/URL ❌
+- Product description display ❌
+- Sort products (by name, price, views) ❌
+- Save to database ❌
 
 ---
 
@@ -687,31 +804,125 @@ className={`base-class ${darkMode ? 'dark-class' : 'light-class'}`}
 
 ---
 
+### 8. Component Composition
+
+**Pattern**: Break complex UIs into smaller, focused components
+
+**Example - Add Product Feature**:
+```javascript
+// Parent manages state and coordination
+<AddProductModal isOpen={isOpen} onClose={close} onAddProduct={add}>
+  {/* Child handles form logic */}
+  <AddProductForm onSubmit={handleSubmit} onCancel={cancel} />
+</AddProductModal>
+```
+
+**Benefits**:
+- Each component has single responsibility
+- Easier to test
+- Reusable pieces
+- Clear data flow
+
+**Separation of Concerns**:
+```
+AddProductModal
+├── Manages: Modal visibility, backdrop, close button
+└── Delegates form logic to AddProductForm
+
+AddProductForm  
+├── Manages: Form state, validation, user input
+└── Reports back via onSubmit callback
+```
+
+---
+
+### 9. Form Handling Best Practices
+
+**Generic Input Handler**:
+```javascript
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  setFormData((prev) => ({ ...prev, [name]: value }));
+};
+
+// Works for ALL inputs!
+<input name="productName" onChange={handleChange} />
+<input name="price" onChange={handleChange} />
+<select name="category" onChange={handleChange} />
+```
+
+**Form Submission**:
+```javascript
+const handleSubmit = (e) => {
+  e.preventDefault(); // Prevent page reload
+  
+  // Validate
+  if (!formData.name) return;
+  
+  // Submit
+  onSubmit(formData);
+  
+  // Reset
+  setFormData(INITIAL_STATE);
+};
+```
+
+**Validation Pattern**:
+```javascript
+if (!payload.productName || !payload.category || !payload.price) {
+  return; // Don't submit if required fields empty
+}
+```
+
+**Why Use name Attribute**:
+```javascript
+// Instead of this (repetitive):
+<input onChange={(e) => setProductName(e.target.value)} />
+<input onChange={(e) => setCategory(e.target.value)} />
+<input onChange={(e) => setPrice(e.target.value)} />
+
+// Do this (one handler):
+<input name="productName" onChange={handleChange} />
+<input name="category" onChange={handleChange} />
+<input name="price" onChange={handleChange} />
+```
+
+---
+
 ## 🚀 Next Steps
 
 ### Phase 1: Complete Products Page
-- [ ] **Add Product Modal**
-  - Create modal component
-  - Form with inputs (name, category, price, description)
-  - Image upload placeholder
-  - Validation
-  - Add to products array
+- [x] **Add Product Modal** ✅ COMPLETED
+  - Created modal component
+  - Built form with inputs (name, category, price, description)
+  - Added validation
+  - Form auto-resets after submission
+  - Separated into AddProductModal and AddProductForm components
 
 - [ ] **Edit Product**
-  - Open modal with existing data
+  - Open modal with existing data pre-filled
   - Update product in array
   - Close modal after save
+  - Reuse AddProductForm component
+
+- [ ] **Image Upload/URL**
+  - Add image field to form
+  - Support URL input or file upload
+  - Display images in table
+  - Placeholder image for products without images
 
 - [ ] **Category Management**
-  - Add new categories
-  - Delete categories
-  - Assign to products
+  - Add new categories dynamically
+  - Delete unused categories
+  - Edit category names
+  - Category dropdown updates automatically
 
 - [ ] **Advanced Features**
   - Sort products (by name, price, views)
   - Category filter dropdown
   - Bulk actions (delete multiple)
   - Export products (CSV)
+  - Product description display in table
 
 ---
 
@@ -1109,5 +1320,11 @@ export default {
 ---
 
 **Last Updated**: February 2026  
-**Version**: 0.1.0 (MVP in progress)  
+**Version**: 0.2.0 (Add Product feature completed)  
 **Status**: Active Development 🚧
+
+**Recent Updates**:
+- ✅ Add Product modal and form completed
+- ✅ Form validation implemented
+- ✅ Component composition pattern applied
+- ✅ Generic form handler pattern implemented

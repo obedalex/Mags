@@ -13,6 +13,8 @@ const ProductsPage = () => {
       category: "Electronics",
       price: "$99.9",
       views: 234,
+      imageUrl:
+        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200", // ← ADD
     },
     {
       id: 2,
@@ -20,6 +22,8 @@ const ProductsPage = () => {
       category: "Electronics",
       price: "$149.9",
       views: 180,
+      imageUrl:
+        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200", // ← ADD
     },
     {
       id: 3,
@@ -27,6 +31,8 @@ const ProductsPage = () => {
       category: "Accessories",
       price: "$39.9",
       views: 120,
+      imageUrl:
+        "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=200", // ← ADD
     },
     {
       id: 4,
@@ -34,6 +40,8 @@ const ProductsPage = () => {
       category: "Accessories",
       price: "$9.9",
       views: 300,
+      imageUrl:
+        "https://images.unsplash.com/photo-1589492477829-5e65395b66cc?w=200", // ← ADD
     },
     {
       id: 5,
@@ -41,11 +49,17 @@ const ProductsPage = () => {
       category: "Accessories",
       price: "$19.9",
       views: 150,
+      imageUrl:
+        "https://images.unsplash.com/photo-1591290619762-c588f0b8c23d?w=200", // ← ADD
     },
   ]);
 
   // Search query
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Add this state
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // State modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -62,8 +76,35 @@ const ProductsPage = () => {
   };
 
   const handleEdit = (productId) => {
-    // implement editing logic or remove prop
-    console.log("edit", productId);
+    const product = products.find((p) => p.id === productId);
+    setEditingProduct(product);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateProduct = (updatedData) => {
+    // Update the product in the array
+    setProducts(
+      products.map(
+        (p) =>
+          p.id === editingProduct.id
+            ? {
+                ...p, // Keep existing data
+                productName: updatedData.productName,
+                category: updatedData.category,
+                price: `$${Number(updatedData.price || 0).toFixed(2)}`,
+                description: updatedData.description,
+                imageUrl: updatedData.imageUrl,
+                // views and id stay the same
+              }
+            : p, // Keep other products unchanged
+      ),
+    );
+
+    // Close the modal
+    setIsEditModalOpen(false);
+
+    // Clear editing state
+    setEditingProduct(null);
   };
 
   // Function to open modal
@@ -93,6 +134,19 @@ const ProductsPage = () => {
   //    setSearchQuery("");
   //  };
 
+  const handleAddProduct = (data) => {
+    const newProduct = {
+      id: crypto.randomUUID(),
+      productName: data.productName,
+      category: data.category,
+      price: `$${Number(data.price || 0).toFixed(2)}`,
+      views: 0,
+      imageUrl: data.imageUrl || "",
+    };
+
+    setProducts((prev) => [newProduct, ...prev]);
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Products</h1>
@@ -106,7 +160,22 @@ const ProductsPage = () => {
         onDelete={handleDelete}
         onEdit={handleEdit}
       />
-      <AddProductModal isOpen={isAddModalOpen} onClose={handleCloseAddModal} />
+      <AddProductModal
+        isOpen={isAddModalOpen}
+        onClose={handleCloseAddModal}
+        onAddProduct={handleAddProduct}
+        mode="add"
+      />
+      <AddProductModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingProduct(null);
+        }}
+        onAddProduct={handleUpdateProduct}
+        initialData={editingProduct}
+        mode="edit"
+      />
     </div>
   );
 };
