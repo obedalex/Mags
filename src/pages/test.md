@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import AppearanceSettings from "@/components/settings/AppearanceSettings";
 import { Palette, MessageCircle } from "lucide-react";
 
@@ -9,7 +9,7 @@ const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState("appearance");
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [messageTemplate, setMessageTemplate] = useState(
-    "Hi! I'm interested in {product_name}. Is it available for {price}?",
+    "Hi! I'm interested in {product_name}. Is it available for {price}?"
   );
 
   // ========================================
@@ -103,7 +103,7 @@ const SettingsPage = () => {
       {/* Active Tab Content */}
       <div>
         {activeTab === "appearance" && <AppearanceSettings />}
-
+        
         {activeTab === "whatsapp" && (
           <div className="bg-card rounded-lg shadow-md border border-border p-6">
             <h2 className="text-xl font-semibold text-card-foreground mb-4">
@@ -143,12 +143,8 @@ const SettingsPage = () => {
                           focus:ring-2 focus:ring-primary outline-none resize-none"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Use{" "}
-                <code className="bg-muted px-1 rounded">
-                  {"{product_name}"}
-                </code>{" "}
-                and <code className="bg-muted px-1 rounded">{"{price}"}</code>{" "}
-                as placeholders
+                Use <code className="bg-muted px-1 rounded">{"{product_name}"}</code> and{" "}
+                <code className="bg-muted px-1 rounded">{"{price}"}</code> as placeholders
               </p>
             </div>
 
@@ -161,7 +157,7 @@ const SettingsPage = () => {
               >
                 💬 Test WhatsApp
               </button>
-
+              
               <button
                 onClick={handleSaveWhatsappSettings}
                 className="bg-primary hover:opacity-90 text-primary-foreground px-4 py-2 

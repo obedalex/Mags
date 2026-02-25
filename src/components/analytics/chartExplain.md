@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 
 
 // this line takes the product with the most views 
